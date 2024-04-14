@@ -1,25 +1,36 @@
-import logo from './logo.svg';
 import './App.css';
+import React from 'react';
+import {
+  createBrowserRouter,
+  RouterProvider,
+  redirect
+} from "react-router-dom"
+import Game from './Game';
+import Levels from './Levels';
 
 function App() {
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      loader: ({ params }) => {
+        return redirect("/0");
+      },
+      element: <Game />
+    },
+    {
+      path: "/:level",
+      loader: ({ params }) => {
+        if (params.level >= Levels.length) {
+          return redirect("/0");
+        }
+        return params.level;
+      },
+      element: <Game />
+    }
+  ])
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <RouterProvider router={router}></RouterProvider>
+  )
 }
 
 export default App;
