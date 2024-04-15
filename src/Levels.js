@@ -40,35 +40,35 @@ const Levels = [
     explanation: "adjacent vowels",
     number: 4,
     isCorrect: word => word.match(/[aeiou]{2,}/),
-    progressWord: 'wordmaster',
+    progressWord: 'student',
     isValid: word => word.length >= 5 && word.length <= 8
   },
   {
     explanation: "reversable",
     number: 5,
     isCorrect: word => popularSet.has(word.split('').reverse().join('')),
-    progressWord: 'wordmaster',
+    progressWord: 'recruit',
     isValid: word => word.length === 3
   },
   {
     explanation: "still a word without first letter",
     number: 6,
     isCorrect: word => popularSet.has(word.slice(1)),
-    progressWord: 'wordmaster',
+    progressWord: 'disciple',
     isValid: word => word.length === 6
   },
   {
     explanation: "three consonants in a row",
     number: 7,
     isCorrect: word => word.match(/[b-df-hj-np-tv-z]{3,}/),
-    progressWord: 'wordmaster',
+    progressWord: 'graduate',
     isValid: word => word.length > 5 && !new Set(word.slice('')).has('y')
   },
   {
     explanation: "equal number of vowels and consonants",
     number: 8,
     isCorrect: word => word.split('').filter(l => consonants.has(l)).length === word.split('').filter(l => vowels.has(l)).length,
-    progressWord: 'wordmaster',
+    progressWord: 'apprentice',
     isValid: word => word.length > 3
   },
   {
