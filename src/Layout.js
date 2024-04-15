@@ -1,22 +1,16 @@
 import React, { useState } from 'react';
 import Stack from '@mui/material/Stack';
-import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import DisabledByDefaultIcon from '@mui/icons-material/DisabledByDefault';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import { Divider, Typography } from '@mui/material';
 
 import Kart from "./Kart"
 import Row from "./Row"
-import { words } from 'popular-english-words'
-import { Typography } from '@mui/material';
-
-const popularWords = words.getMostPopularFilter(10000, word => word.length > 3 && word.length < 9);
+import popularWords from './words'
 
 const Layout = ({ level }) => {
   const [words, setWords] = useState([]);
   const [addedWords, setAddedWords] = useState([]);
-  const [progress, setProgress] = useState(0);
+  const [progressMask, setProgressMask] = useState(new Array(level.progressWord.length).fill(false));
   const [win, setWin] = useState(false);
 
   const renderCorrectEntries = (addedWords) => {
@@ -28,92 +22,186 @@ const Layout = ({ level }) => {
   }
 
   const renderEntries = (addedWords, isCorrect) => {
-    return addedWords.slice(0, 36).map((word) => {
-      return <Row word={word} isCorrect={isCorrect} > </Row >
+    return addedWords.slice(0, 20).map((word) => {
+      return <Row key={word} word={word} isCorrect={isCorrect} > </Row >
     });
   }
 
-  const checkBox = <CheckBoxIcon fontSize="inherit" style={{ fontSize: 50, color: "green" }} />;
-  const emptyBox = <CheckBoxOutlineBlankIcon fontSize="inherit" style={{ fontSize: 50 }} />;
+  // const checkBox = <CheckBoxIcon fontSize="inherit" style={{ fontSize: 100, color: "green" }} />;
+  // const emptyBox = <CheckBoxOutlineBlankIcon fontSize="inherit" style={{ fontSize: 100 }} />;
 
-  const renderProgress = (progress) => {
-    let ticks = new Array(progress).fill(checkBox);
-    let empties = new Array(Math.max(level.correctsRequired - progress, 0)).fill(emptyBox);
-    return ticks.concat(empties);
+  // const checkA = <span style={{ fontSize: 100, color: "green" }}>A</span>
+  // const emptyA = <span style={{ fontSize: 100 }}>A</span>;
+
+  const renderProgress = (progressMask) => {
+    return level.progressWord.split('').map((letter, i) =>
+      !progressMask[i] ?
+        <span key={i}
+          style={{
+            lineHeight: .8,
+            letterSpacing: 15,
+            fontSize: 150,
+            fontWeight: 600,
+            fontFamily: "Sedan",
+            color: "grey",
+          }
+          } >
+          {letter}
+        </span >
+        :
+        <span key={i}
+          style={{
+            lineHeight: .8,
+            fontSize: 150,
+            letterSpacing: 15,
+            fontWeight: 600,
+            fontFamily: "Sedan",
+            color: "MediumSeaGreen"
+          }} >
+          {letter}
+        </span >);
   };
 
-  const randomWord = () => popularWords[Math.floor(Math.random() * (popularWords.length - 1))];
+  // const renderProgress = (progressMask) => {
+  //   let ticks = new Array(progress).fill(checkA);
+  //   let empties = new Array(Math.max(level.correctsRequired - progress, 0)).fill(emptyA);
+  //   return ticks.concat(empties);
+  // };
+
+  // NOT EFFICIENT - FIX FOR PERFORMANCE IF NECESSARY
+  const randomWord = () => popularWords.filter(level.isValid)[Math.floor(Math.random() * (popularWords.filter(level.isValid).length - 1))];
+
+  const randomWordPair = () => Math.random() > 0.5 ? [randomCorrectWord(), randomWrongWord()] : [randomWrongWord(), randomCorrectWord()];
 
   const randomCorrectWord = () => {
-    while (true) {
+    let cnt = 10000;
+    let skip = 100;
+    while (cnt) {
       let rw = randomWord();
-      if (level.isCorrect(rw) && !addedWords.find(w => w == rw)) {
+      if (new Set(addedWords).has(rw) && skip > 0) {
+        skip--;
+        continue;
+      }
+      if (level.isCorrect(rw)) {
+        console.log(cnt);
         return rw;
       }
+      cnt--;
     }
   }
 
   const randomWrongWord = () => {
-    while (true) {
+    let cnt = 10000;
+    let skip = 100;
+    while (cnt) {
       let rw = randomWord();
-      if (!level.isCorrect(rw) && !addedWords.find(w => w == rw)) {
+      if (new Set(addedWords).has(rw) && skip > 0) {
+        skip--;
+        continue;
+      }
+      if (!level.isCorrect(rw)) {
         return rw;
       }
+      cnt--;
     }
   }
 
-  if (words.length == 0) setWords(Math.random() > 0.5 ? [randomCorrectWord(), randomWrongWord()] : [randomWrongWord(), randomCorrectWord()]);
+  if (words.length === 0) setWords(randomWordPair());
 
-  const clicked = (word) => {
+  const addToAddedWords = (word) => {
+    let tempWords = [...addedWords];
+    var index = tempWords.indexOf(word);
+    if (index !== -1) {
+      tempWords.splice(index, 1);
+    }
+    setAddedWords([word, ...tempWords]);
+  }
+
+
+
+  const updateProgress = (word) => {
     if (level.isCorrect(word)) {
-      if (progress == level.correctsRequired - 1) {
+      if (progressMask.filter((a) => !a).length === 1) {
         setWin(true);
       }
-      setProgress(progress + 1);
+      let cnt = 1000;
+      while (cnt) {
+        let randIndex = Math.floor(Math.random() * progressMask.length);
+        if (!progressMask[randIndex]) {
+          setProgressMask([...progressMask.slice(0, randIndex), true, ...progressMask.slice(randIndex + 1)])
+          break;
+        }
+        cnt--;
+      }
     } else {
-      setProgress(0);
+      setProgressMask(Array(level.progressWord.length).fill(false));
     }
-    setAddedWords([word, ...addedWords]);
-    setWords(Math.random() > 0.5 ? [randomCorrectWord(), randomWrongWord()] : [randomWrongWord(), randomCorrectWord()]);
+  }
+
+  const clicked = (word) => {
+    updateProgress(word);
+    addToAddedWords(word);
+    setWords(randomWordPair());
   };
 
   const renderCards = (words) => words.map(
     word =>
-      <Kart word={word} clicked={clicked}></Kart>
+      <Kart key={word} word={word} clicked={clicked}></Kart>
   );
-
 
   return (
     <Box style={{ marginTop: "20px" }}>
+      <Typography style={{ color: "grey", fontSize: "50px" }}>
+        Training for:
+      </Typography>
+      <Stack direction="row" justifyContent="center">
+        {renderProgress(progressMask)}
+      </Stack>
+      <Divider />
       {win ?
-        <Typography style={{ fontWeight: 500, fontSize: 30, letterSpacing: "2px", color: "green", lineHeight: "1" }} >
-          well done!
-          <br />
-          you found the pattern:
-          <br />
-          <span style={{ fontSize: 80, fontWeight: 600, color: "black" }}>
-            {level.explanation}
-          </span>
-          <br />
-          <a href={"/" + (level.number + 1)}>
-            <span style={{ color: "red" }}>another?</span>
-          </a>
-        </Typography>
+        <Box style={{ padding: "30px" }}>
+          <Typography style={{ fontWeight: 500, fontSize: 60, letterSpacing: "2px", color: "green", lineHeight: "1" }} >
+            well done!
+            <br />
+            you found the pattern:
+            <br />
+            <span style={{ fontSize: 150, fontWeight: 600, color: "black" }}>
+              {level.explanation}
+            </span>
+            <br />
+            <a href={"/" + (level.number + 1)}>
+              <span
+                style={{ fontSize: 100, color: "red" }}>
+                next training?
+              </span>
+            </a>
+          </Typography>
+        </Box>
         :
-        <Stack direction="row" justifyContent="space-evenly">
+        <Stack direction="row" useFlexGap flexWrap="wrap" justifyContent="center">
           {renderCards(words)}
         </Stack >
       }
-
-      <Stack direction="row" justifyContent="center" margin="20px">
-        {renderProgress(progress)}
-      </Stack>
+      <Divider orientation='horizontal' />
       <Stack direction="row" justifyContent="space-evenly">
-        <Stack direction="column" useFlexGap flexWrap="wrap" maxHeight={400} maxWidth={300}>
-          {renderCorrectEntries(addedWords)}
+        <Stack direction="column">
+          <Typography variant='h3' style={{ fontWeight: 600, color: "DarkGreen" }}>
+            beautiful words
+          </Typography>
+          <Divider />
+          <Stack direction="column" useFlexGap flexWrap="wrap" maxHeight={420} maxWidth={350}>
+            {renderCorrectEntries(addedWords)}
+          </Stack>
         </Stack>
-        <Stack direction="column" useFlexGap flexWrap="wrap" maxHeight={400} maxWidth={300}>
-          {renderWrongEntries(addedWords)}
+        <Divider orientation='vertical' flexItem />
+        <Stack direction="column">
+          <Typography variant='h3' style={{ fontWeight: 600, color: "Maroon" }}>
+            unpleasant words
+          </Typography>
+          <Divider />
+          <Stack direction="column" useFlexGap flexWrap="wrap" maxHeight={420} maxWidth={350}>
+            {renderWrongEntries(addedWords)}
+          </Stack>
         </Stack>
       </Stack >
 

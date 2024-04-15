@@ -1,19 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import CheckIcon from '@mui/icons-material/Check';
-import CloseIcon from '@mui/icons-material/Close';
 
 const Row = ({ word, isCorrect, count }) => {
 
   return (
     <>
-      <Typography variant="h5">
+      <Typography variant="h4">
         <Stack direction="row" spacing={2} justifyContent="center">
           <span style={{
-            width: 100,
-            textAlign: "left",
-            marginRight: 30,
+            width: 180,
+            textAlign: "center",
             color: isCorrect ? "green" : "red"
           }}>{word}</span>
         </Stack>

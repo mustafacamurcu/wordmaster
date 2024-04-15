@@ -1,26 +1,23 @@
-import React, { useState } from 'react';
-import Stack from '@mui/material/Stack';
+import React from 'react';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
-import Button from '@mui/material/Button';
 import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
-import CardActions from '@mui/material/CardActions';
 import { styled } from "@mui/material/styles";
 
 const StyledCard = styled(Card)(() => ({
-  width: 350,
+  width: 800,
   alignContent: "center",
-  height: 160,
-  backgroundColor: "#9CAFAA",
+  height: 350,
+  backgroundColor: "#EFBC9B",
   borderRadius: 16,
+  margin: 20
 }));
 
 const StyledTypography = styled(Typography)(() => ({
-  fontWeight: 400,
-  fontSize: 75,
-  color: "#EFBC9B",
-  letterSpacing: "-2px",
+  fontWeight: 500,
+  fontSize: 180,
+  color: "#8CAF9A",
+  letterSpacing: "-7px",
 }));
 
 

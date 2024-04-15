@@ -1,4 +1,4 @@
-const words = ["you",
+const popularWords = ["you",
   "I",
   "to",
   "the",
@@ -9999,4 +9999,4 @@ const words = ["you",
   "rust"
 ];
 
-export default words;
+export default popularWords.filter(word => word.length >= 3 && word.length < 9);
